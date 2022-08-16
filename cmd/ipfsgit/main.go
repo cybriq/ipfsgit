@@ -52,13 +52,13 @@ func main() {
 
 func (h *Handler) handleRequest(r *http.Request, ctx *goproxy.ProxyCtx) (req *http.Request, res *http.Response) {
 	var host string
-	// if !strings.Contains(r.URL.Host, ":") {
-	// 	host = r.URL.Host + ":80"
-	// } else {
-	// 	host = r.URL.Host
-	// }
-
-	Info.Printf("handling request for host '%s' URL '%s'", host, r.URL)
+	if !strings.Contains(r.URL.Host, ":") {
+		host = r.URL.Host + ":80"
+	} else {
+		host = r.URL.Host
+	}
+	Original := r.URL.String()
+	Info.Printf("handling request for host '%s' URL '%s'", host, Original)
 	split := strings.Split(r.URL.RequestURI(), "/")
 	var URI string
 	if len(split) > 2 {
@@ -74,7 +74,10 @@ func (h *Handler) handleRequest(r *http.Request, ctx *goproxy.ProxyCtx) (req *ht
 		return r, nil
 	}
 	// res.Header.Set("", URI)
-	Info.Println(spew.Sdump(res.Request))
+	Info.Println(spew.Sdump(res))
+	Info.Println(spew.Sdump(r))
+	res.Header.Set("Location", Original)
+	r.Header.Set("Location", Original)
 	// res.Request.URL, _ = url.ParseRequestURI(URI)
 	return r, res
 }
