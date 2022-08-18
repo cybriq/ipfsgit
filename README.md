@@ -32,7 +32,8 @@ IPFS is essentially a generalised, programmable variant of the Bittorrent
 protocol, which has become the primary method of peer to peer file sharing.
 It identifies content by computed hashes similar to Magnet links, and
 provides a web proxy that can be used to access this data via any HTTP aware
-application.
+application. Its main distinguishing feature is the P2P network which 
+enables seacrhing peers for uncached content in order to cache it.
 
 Unfortunately, due to the nature of the culture of the individuals and
 projects that currently make the most use of IPFS, ie, NFT and ethereum
@@ -157,67 +158,20 @@ and set as your default method to resolve IPFS resources as "gateway". By
 default this will be a public gateway, but you don't need that anymore, you
 have your own node now.
 
-To configure it, navigate to the address
-[http://127.0.0.1:5001/webui](http://127.0.0.1:5001/webui) and it's fairly
-self explanatory from there.
+## Pull
 
-I recommend using Brave browser, it's just the best of one of the most
-terrible technologies out there (because of javascript mainly), and it
-understands HTTP so you can inspect your hosted filesystems with it directly
-as well, which functions like the file browser on github or other git
-hosting site.
+Pull is the name for the IPFS proxy. So named because it causes data to be 
+downloaded from IPFS p2p network.
 
-Some nice configuration tweaks, which will be essential, actually. This
-changes the setup, so you have a proxy running on your local machine
-listening to port 80, the standard HTTP port, and thus you can leave the 
-port number out.
+The application in [./cmd/pull](cmd/ipfsproxy/) is a HTTP proxy that you 
+can set as your system proxy, which will redirect the 'ipfs', 'ipns' and 
+'ipld' "hostnames" and point them at a default configured IPFS installation, 
+such as what the foregoing section explained how to install and set to run 
+as a service.
 
-In the IPFS web interface, or in the file `~/.ipfs/config` there is two
-places the port 8080 is used, and this enables you to change it to 80 and
-omit the port specification:
+## Push
 
-```json 
-{
-  "API": {
-    "HTTPHeaders": {
-      "Access-Control-Allow-Methods": [
-        "PUT",
-        "POST"
-      ],
-      "Access-Control-Allow-Origin": [
-        "http://bafybeibozpulxtpv5nhfa2ue3dcjx23ndh3gwr5vwllk7ptoyfwnfjjr4q.ipfs.localhost:80",
-        "http://localhost:3000",
-        "http://127.0.0.1:5001",
-        "https://webui.ipfs.io"
-      ]
-    }
-  },
-  "Addresses": {
-    "API": "/ip4/127.0.0.1/tcp/5001",
-    "Announce": [],
-    "AppendAnnounce": [],
-    "Gateway": "/ip4/127.0.0.1/tcp/80",
-    "NoAnnounce": [],
-    "Swarm": [
-      "/ip4/0.0.0.0/tcp/4001",
-      "/ip6/::/tcp/4001",
-      "/ip4/0.0.0.0/udp/4001/quic",
-      "/ip6/::/udp/4001/quic"
-    ]
-  }
-}
-```
 
-Your configuration will have a different address directly under 
-`Access-Control-Allow-Origin` but as you can see, at the end you can now 
-change it to 80, because of the line in the systemd unit:
 
-    AmbientCapabilities=CAP_NET_BIND_SERVICE 
 
-and second is the `Gateway` line a little further down in the `"Addresses"` 
-section, again, from 8080 to 80.
-
-This actually is essential, because now we can make an alias for `localhost` 
-which is verboten to use as an address in a Go import line.
-
-#### TODO: finish the rest once once ipfsgit tools are written
+#### TODO: finish the rest once ipfsgit tools are written

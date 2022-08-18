@@ -1,13 +1,13 @@
 package main
 
 import (
-	"io"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/elazarl/goproxy"
 )
 
@@ -17,29 +17,25 @@ var (
 	Error   *log.Logger
 )
 
+var port = flag.Int("port", 8008, "Port for proxy to listen on")
+var address = flag.String("address", "0.0.0.0",
+	"network address to bind pull proxy to")
+
 type Handler struct{}
 
-func initLog(
-	infoHandle io.Writer,
-	warningHandle io.Writer,
-	errorHandle io.Writer) {
-
-	Info = log.New(infoHandle,
-		"INFO ",
+func initLog() {
+	infoHandle, warningHandle, errorHandle := os.Stderr, os.Stderr, os.Stderr
+	Info = log.New(infoHandle, "INFO ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-
-	Warning = log.New(warningHandle,
-		"WARNING ",
+	Warning = log.New(warningHandle, "WARNING ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-
-	Error = log.New(errorHandle,
-		"ERROR ",
+	Error = log.New(errorHandle, "ERROR ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func main() {
-	initLog(os.Stdout, os.Stdout, os.Stderr)
-
+	initLog()
+	flag.Parse()
 	h := &Handler{}
 
 	proxy := goproxy.NewProxyHttpServer()
@@ -47,10 +43,12 @@ func main() {
 	proxy.OnRequest().HandleConnectFunc(h.handleConnect)
 	proxy.OnRequest().DoFunc(h.handleRequest)
 
-	log.Fatal(http.ListenAndServe(":8008", proxy))
+	log.Fatal(http.ListenAndServe(
+		fmt.Sprintf("%s:%d", *address, *port), proxy))
 }
 
-func (h *Handler) handleRequest(r *http.Request, ctx *goproxy.ProxyCtx) (req *http.Request, res *http.Response) {
+func (h *Handler) handleRequest(r *http.Request,
+	ctx *goproxy.ProxyCtx) (req *http.Request, res *http.Response) {
 	var host string
 	if !strings.Contains(r.URL.Host, ":") {
 		host = r.URL.Host + ":80"
@@ -74,14 +72,18 @@ func (h *Handler) handleRequest(r *http.Request, ctx *goproxy.ProxyCtx) (req *ht
 		return r, nil
 	}
 	// res.Header.Set("", URI)
-	Info.Println(spew.Sdump(res))
-	Info.Println(spew.Sdump(r))
+	// Info.Println(spew.Sdump(res))
+	// Info.Println(spew.Sdump(r))
 	res.Header.Set("Location", Original)
 	r.Header.Set("Location", Original)
 	// res.Request.URL, _ = url.ParseRequestURI(URI)
+	// TODO: search and replace IPFS web interface and web pages in general
+	//  to identify IPNS relative link locations and rewrite the content so
+	//  the web interface works with this proxy.
 	return r, res
 }
-func (h *Handler) handleConnect(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
+func (h *Handler) handleConnect(host string,
+	ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 	Info.Printf("connecting to '%s'", host)
 	switch host {
 	case "ipns", "ipfs", "ipld":
