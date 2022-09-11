@@ -11,24 +11,24 @@ import (
 	"github.com/elazarl/goproxy"
 )
 
-var (
-	Info    *log.Logger
-	Warning *log.Logger
-	Error   *log.Logger
-)
-
 var port = flag.Int("port", 8008, "Port for proxy to listen on")
 var address = flag.String("address", "0.0.0.0",
 	"network address to bind pull proxy to")
 
 type Handler struct{}
 
+var (
+	Info *log.Logger
+	// Warning *log.Logger
+	Error *log.Logger
+)
+
 func initLog() {
-	infoHandle, warningHandle, errorHandle := os.Stderr, os.Stderr, os.Stderr
+	infoHandle, errorHandle := os.Stderr, os.Stderr
 	Info = log.New(infoHandle, "INFO ",
 		log.Ldate|log.Ltime|log.Lshortfile)
-	Warning = log.New(warningHandle, "WARNING ",
-		log.Ldate|log.Ltime|log.Lshortfile)
+	// Warning = log.New(warningHandle, "WARNING ",
+	// 	log.Ldate|log.Ltime|log.Lshortfile)
 	Error = log.New(errorHandle, "ERROR ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
@@ -43,6 +43,7 @@ func main() {
 	proxy.OnRequest().HandleConnectFunc(h.handleConnect)
 	proxy.OnRequest().DoFunc(h.handleRequest)
 
+	Info.Printf("IPFS proxy Listening on %s:%d", *address, *port)
 	log.Fatal(http.ListenAndServe(
 		fmt.Sprintf("%s:%d", *address, *port), proxy))
 }

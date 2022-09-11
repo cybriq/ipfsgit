@@ -64,8 +64,8 @@ Or you can do this, real simple
     cd
     mkdir bin
     sudo apt install -y wget curl git build-essential
-    wget https://go.dev/dl/go1.18.linux-amd64.tar.gz
-    tar xvf go1.18.linux-amd64.tar.gz
+    wget https://go.dev/dl/go1.18.5.linux-amd64.tar.gz
+    tar xvf go1.18.5.linux-amd64.tar.gz
 
 Then add this to the end of your `~/.bashrc`:
 
@@ -105,7 +105,7 @@ also free to use instead, but it's not gonna run auto for you, which kinda
 defeats the purpose of hosting your own stuff unless you also add it to your
 auto-start apps for login. But this option I will show you doesn't need you
 to log in, it will start up by itself and already be running when the login
-streen appears.
+screen appears.
 
 Put this following content into `/etc/systemd/system/ipfs.service`:
 
@@ -117,7 +117,7 @@ Put this following content into `/etc/systemd/system/ipfs.service`:
     [Service]
     
     # enable for 1-1024 port listening
-    AmbientCapabilities=CAP_NET_BIND_SERVICE 
+    #AmbientCapabilities=CAP_NET_BIND_SERVICE 
     # enable to specify a custom path see docs/environment-variables.md for further documentations
     #Environment=IPFS_PATH=/custom/ipfs/path
     # enable to specify a higher limit for open files/connections
